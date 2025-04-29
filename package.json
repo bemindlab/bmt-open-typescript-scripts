@@ -1,0 +1,19 @@
+{
+  "name": "open-typescript-scripts",
+  "version": "0.0.1",
+  "description": "Open TypeScript Scripts",
+  "repository": "https://github.com/bemindlab/bmt-open-source",
+  "author": "Bemind Technology",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "generate:commit-summary": "tsx ./src/generate-commit-summary.ts"
+  },
+  "dependencies": {
+    "tsx": "^4.19.0",
+    "typescript": "^5.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.18"
+  }
+}
