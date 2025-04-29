@@ -7,6 +7,7 @@
 ```bash
 # ติดตั้ง dependencies
 git clone https://github.com/bemindlab/bmt-open-typescript-scripts.git
+cd bmt-open-typescript-scripts
 yarn install
 ```
 
@@ -14,7 +15,7 @@ yarn install
 
 ```bash
 # รันสคริปต์
-yarn {script key}
+yarn {script key} #เช่น 
 ```
 
 ## 🛠️ เทคโนโลยีที่ใช้
