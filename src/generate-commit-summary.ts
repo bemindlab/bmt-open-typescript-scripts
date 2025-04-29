@@ -52,7 +52,7 @@ function saveSummary(
 ): string {
   const summaryDir = path.join(
     process.cwd(),
-    "__commit_logs__", //TODO: ตั้งชื่อได้ตามต้องการ
+    "__development_logs__", //TODO: ตั้งชื่อได้ตามต้องการ
     "commit_summaries" //TODO: ตั้งชื่อได้ตามต้องการ
   );
   if (!fs.existsSync(summaryDir)) {

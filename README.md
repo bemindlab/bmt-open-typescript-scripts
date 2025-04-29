@@ -15,7 +15,7 @@ yarn install
 
 ```bash
 # รันสคริปต์
-yarn {script key} #เช่น 
+yarn {script key} #เช่น yarn generate:commit-summary
 ```
 
 ## 🛠️ เทคโนโลยีที่ใช้
