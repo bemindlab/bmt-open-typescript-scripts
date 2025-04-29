@@ -3,20 +3,9 @@ import * as fs from "fs";
 import * as path from "path";
 import { createInterface } from "readline";
 
-interface CommitInfo {
-  hash: string;
+interface AuthorInfo {
   author: string;
-  date: string;
-  message: string;
-}
-
-function getCurrentCommit(): CommitInfo {
-  const hash = execSync("git rev-parse HEAD").toString().trim();
-  const author = execSync('git log -1 --pretty=format:"%an"').toString().trim();
-  const date = execSync('git log -1 --pretty=format:"%ad"').toString().trim();
-  const message = execSync('git log -1 --pretty=format:"%B"').toString().trim();
-
-  return { hash, author, date, message };
+  email: string;
 }
 
 function getChangedFiles(): string[] {
@@ -24,16 +13,20 @@ function getChangedFiles(): string[] {
   return output ? output.split("\n") : [];
 }
 
+function getAuthorInfo(): AuthorInfo {
+  const author = execSync("git config user.name").toString().trim();
+  const email = execSync("git config user.email").toString().trim();
+  return { author, email };
+}
+
 function generatePrompt(
-  commitInfo: CommitInfo,
+  authorInfo: AuthorInfo,
   changedFiles: string[]
 ): string {
   return `กรุณาสร้างสรุปรายละเอียดของ commit ต่อไปนี้:
 
-Commit Hash: ${commitInfo.hash}
-Author: ${commitInfo.author}
-Date: ${commitInfo.date}
-Message: ${commitInfo.message}
+Author: ${authorInfo.author}
+Email: ${authorInfo.email}
 
 ไฟล์ที่เปลี่ยนแปลง:
 ${changedFiles.map((file) => `- ${file}`).join("\n")}
@@ -47,7 +40,7 @@ ${changedFiles.map((file) => `- ${file}`).join("\n")}
 
 function saveSummary(
   summary: string,
-  commitInfo: CommitInfo,
+  authorInfo: AuthorInfo,
   changedFiles: string[]
 ): string {
   const summaryDir = path.join(
@@ -59,18 +52,14 @@ function saveSummary(
     fs.mkdirSync(summaryDir, { recursive: true });
   }
 
-  const filename = `${new Date().toISOString().split("T")[0]}_${
-    commitInfo.hash
-  }.md`;
+  const now = new Date();
+  const filename = `${now.toISOString()}.md`;
   const filepath = path.join(summaryDir, filename);
-
   const content = `# สรุปการ Commit
 
 ## รายละเอียด Commit
-- **Hash:** ${commitInfo.hash}
-- **ผู้เขียน:** ${commitInfo.author}
-- **วันที่:** ${commitInfo.date}
-- **ข้อความ:** ${commitInfo.message}
+- **ผู้เขียน:** ${authorInfo.author}
+- **อีเมล:** ${authorInfo.email}
 
 ## สรุปที่สร้างโดย AI
 ${summary}
@@ -87,7 +76,7 @@ ${changedFiles.map((file: string) => `- ${file}`).join("\n")}
 
 async function main() {
   try {
-    const commitInfo = getCurrentCommit();
+    const commitInfo = getAuthorInfo();
     const changedFiles = getChangedFiles();
 
     // ตรวจสอบว่าไฟล์ที่เพิ่มใน staging area มีหรือไม่
@@ -100,9 +89,11 @@ async function main() {
 
     console.log("กำลังสร้างสรุปการ commit...");
     console.log("หมายเหตุ: กรุณาใช้ LLM AI เพื่อวิเคราะห์คำขอต่อไปนี้:");
-    console.log("\n" + generatePrompt(commitInfo, changedFiles));
+    console.log("-".repeat(80), "\n");
+    console.log(generatePrompt(commitInfo, changedFiles), "\n");
+    console.log("-".repeat(80), "\n");
     console.log(
-      "\nหลังจากได้รับสรุปจาก LLM AI (เช่น OpenAI, Claude, Cursor, อื่นๆ.) แล้ว กรุณาบันทึกเพื่อดำเนินการต่อ"
+      "\nหลังจากได้รับสรุปจาก LLM AI (เช่น OpenAI, Claude, Cursor, อื่นๆ ที่สามารถอ่าน code ใน project ได้) แล้ว \nคัดลอกสรุปจาก AI และวาง ที่นี่\n"
     );
 
     //TODO: เชื่อมกับ LLM เช่น OpenAI, Cursor AI, Claude AI, อื่นๆ.
@@ -112,15 +103,12 @@ async function main() {
       input: process.stdin,
       output: process.stdout,
     });
-
-    console.log("\nกด Enter หลังจากที่คุณได้รับสรุปจาก LLM AI แล้ว...");
+    console.log("ต้องการยกเลิกการทำงาน กด Ctrl+Z หรือ Ctrl+C");
 
     // รอให้ผู้ใช้กด Enter
     await new Promise((resolve) => readline.question("", resolve));
 
-    console.log(
-      "กรุณาวางสรุปจาก LLM AI (กด Ctrl+D หรือ Ctrl+C เมื่อเสร็จสิ้น):"
-    );
+    console.log("กด Ctrl+D หรือ Ctrl+C เมื่อเสร็จสิ้น :\n");
 
     let summary = "";
 
